@@ -8,6 +8,7 @@ public class MainActivity extends AndroidGame {
 
     @Override
     public Screen getInitScreen() {
+        //test
         return new LoadingScreen(this);
     }
 
