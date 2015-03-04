@@ -8,6 +8,6 @@ import co.therealm.framework.Music;
  */
 public class Assets {
 
-    public static Image menu;
+    //public static Image menu;
 
 }

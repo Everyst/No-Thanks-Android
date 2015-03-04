@@ -13,9 +13,11 @@ import co.therealm.framework.Input.TouchEvent;
 import co.therealm.framework.Screen;
 import co.therealm.nothanks.model.Card;
 import co.therealm.nothanks.model.Deck;
+import co.therealm.nothanks.players.GeoffFAI;
 import co.therealm.nothanks.players.HumanPlayer;
+import co.therealm.nothanks.players.NetValueLessThanXAI;
+import co.therealm.nothanks.players.NeverTakeAI;
 import co.therealm.nothanks.players.Player;
-import co.therealm.nothanks.players.RandomAI;
 
 /**
  * Created by Geoffrey on 3/03/2015.
@@ -39,20 +41,33 @@ public class GameScreen extends Screen {
     private Deck deck;
     private Card currentCard;
 
-
-    Paint paint;
+    Paint paintMiddle;
+    Paint paintLeft;
+    Paint paintRight;
 
     public GameScreen(Game game) {
         super(game);
 
         // Initialize game objects here
 
-        // Defining a paint object
-        paint = new Paint();
-        paint.setTextSize(30);
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setAntiAlias(true);
-        paint.setColor(Color.WHITE);
+        // Defining paint objects
+        paintMiddle = new Paint();
+        paintMiddle.setTextSize(30);
+        paintMiddle.setTextAlign(Paint.Align.CENTER);
+        paintMiddle.setAntiAlias(true);
+        paintMiddle.setColor(Color.WHITE);
+
+        paintLeft = new Paint();
+        paintLeft.setTextSize(20);
+        paintLeft.setTextAlign(Paint.Align.LEFT);
+        paintLeft.setAntiAlias(true);
+        paintLeft.setColor(Color.WHITE);
+
+        paintRight = new Paint();
+        paintRight.setTextSize(20);
+        paintRight.setTextAlign(Paint.Align.RIGHT);
+        paintRight.setAntiAlias(true);
+        paintRight.setColor(Color.WHITE);
 
 
         // Set up the deck
@@ -109,13 +124,13 @@ public class GameScreen extends Screen {
                     TouchEvent event = touchEvents.get(i);
                     if (event.type == TouchEvent.TOUCH_UP) {
 
-                        decisionMade = true;
-
-                        if (event.x < 640) {
+                        if (inBounds(event, 180, 600, 300, 100)) {
                             // Yes please
+                            decisionMade = true;
                             humanPlayer.setTaking(true);
-                        } else if (event.x >= 640) {
+                        } else if (inBounds(event, 820, 600, 300, 100)) {
                             // No thanks
+                            decisionMade = true;
                             humanPlayer.setTaking(false);
                         }
                     }
@@ -168,12 +183,9 @@ public class GameScreen extends Screen {
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
-                if (event.x > 300 && event.x < 980 && event.y > 100
-                        && event.y < 500) {
-                    nullify();
-                    game.setScreen(new MainMenuScreen(game));
-                    return;
-                }
+                nullify();
+                game.setScreen(new MainMenuScreen(game));
+                return;
             }
         }
     }
@@ -183,10 +195,10 @@ public class GameScreen extends Screen {
     private static List<Player> setUpPlayers(){
         List<Player> players = new ArrayList<Player>();
 
-        players.add(new HumanPlayer("Player1"));
-        players.add(new HumanPlayer("Player2"));
-        players.add(new HumanPlayer("Player3"));
-        players.add(new HumanPlayer("Player4"));
+        //players.add(new HumanPlayer("Player1"));
+        //players.add(new HumanPlayer("Player2"));
+        //players.add(new HumanPlayer("Player3"));
+        //players.add(new HumanPlayer("Player4"));
 
 
         //players.add(new RandomAI("Player1"));
@@ -194,9 +206,12 @@ public class GameScreen extends Screen {
         //players.add(new RandomAI("Player3"));
         //players.add(new RandomAI("Player4"));
 
-        //players.add(new GeoffFAI());
-        //players.add(new NetValueLessThanXAI(11));
-        //players.add(new NeverTakeAI());
+
+        players.add(new HumanPlayer());
+
+        players.add(new GeoffFAI());
+        players.add(new NetValueLessThanXAI(11));
+        players.add(new NeverTakeAI());
 
 
         Collections.shuffle(players); // shuffle the order of players
@@ -210,6 +225,16 @@ public class GameScreen extends Screen {
             currentPlayer = 0;
         }
         return currentPlayer;
+    }
+
+
+    private boolean inBounds(TouchEvent event, int x, int y, int width,
+                             int height) {
+        if (event.x > x && event.x < x + width - 1 && event.y > y
+                && event.y < y + height - 1)
+            return true;
+        else
+            return false;
     }
 
 
@@ -238,7 +263,9 @@ public class GameScreen extends Screen {
 
         // Set all variables to null. You will be recreating them in the
         // constructor.
-        paint = null;
+        paintMiddle = null;
+        paintLeft = null;
+        paintRight = null;
 
         currentPlayer = 0;
         numberOfPlayers = 0;
@@ -255,16 +282,33 @@ public class GameScreen extends Screen {
         Graphics g = game.getGraphics();
         g.drawARGB(155, 0, 0, 0);
 
-        g.drawString(players.get(currentPlayer).getName() + " takes their turn", 640, 100, paint);
+        g.drawString("It is " + players.get(currentPlayer).getName() + "'s turn", 640, 100, paintMiddle);
 
-        g.drawString("The current card is", 640, 200, paint);
-        g.drawString(""+currentCard.getValue(), 640, 250, paint);
-        g.drawString("with "+currentCard.getTokens()+" tokens", 640, 300, paint);
+        for (int i = 0; i < otherPlayers.size(); i++){
+            if (i % 2 == 0) {
+                g.drawString(otherPlayers.get(i).getName(), 100, 150+i*40, paintLeft);
+                g.drawString("Cards: " + otherPlayers.get(i).getCards().toString(), 100, 180+i*40, paintLeft);
+            } else {
+                g.drawString(otherPlayers.get(i).getName(), 1180, 150+(i-1)*40, paintRight);
+                g.drawString("Cards: " + otherPlayers.get(i).getCards(), 1180, 180+(i-1)*40, paintRight);
+            }
+        }
 
-        g.drawString(players.get(currentPlayer).getName() + " has " + players.get(currentPlayer).getTokens() + " tokens", 640, 450, paint);
+        g.drawString("There are " + deck.cardsRemaining() + " cards left. The current card is", 640, 325, paintMiddle);
+        g.drawString(""+currentCard.getValue(), 640, 375, paintMiddle);
+        g.drawString("with "+currentCard.getTokens()+" token/s", 640, 425, paintMiddle);
 
-        g.drawString("Yes please", 320, 600, paint);
-        g.drawString("No thanks", 960, 600, paint);
+
+        g.drawString("Your cards are: " + players.get(currentPlayer).getCards(), 640, 500, paintMiddle);
+
+        g.drawString("You have " + players.get(currentPlayer).getTokens() + " token/s", 640, 550, paintMiddle);
+
+
+        g.drawRect(180, 600, 300, 100, Color.DKGRAY);
+        g.drawString("Yes please", 320, 650, paintMiddle);
+
+        g.drawRect(820, 600, 300, 100, Color.DKGRAY);
+        g.drawString("No thanks", 960, 650, paintMiddle);
 
     }
 
@@ -272,22 +316,24 @@ public class GameScreen extends Screen {
         Graphics g = game.getGraphics();
         g.drawARGB(155, 0, 0, 0);
 
-        g.drawString("Paused", 640, 300, paint);
+        g.drawString("Paused", 640, 300, paintMiddle);
 
     }
 
     private void drawGameOverUI() {
         Graphics g = game.getGraphics();
         g.drawARGB(155, 0, 0, 0);
-        g.drawString("GAME OVER", 640, 100, paint);
+        g.drawString("GAME OVER", 640, 100, paintMiddle);
 
         Collections.sort(players);
 
-        g.drawString(players.get(0) + " won!", 640, 200, paint);
+        g.drawString(players.get(0) + " won!", 640, 200, paintMiddle);
 
         for (int i = 0; i < numberOfPlayers; i++){
-            g.drawString("Player " + players.get(i) + " got " + players.get(i).getStatus(), 640, 250 + 50*i, paint);
+            g.drawString("Player " + players.get(i) + " got " + players.get(i).getStatus(), 640, 300 + 50*i, paintMiddle);
         }
+
+        g.drawString("Tap anywhere to go back to the menu", 640, 600, paintMiddle);
 
     }
 
