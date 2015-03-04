@@ -102,13 +102,7 @@ public abstract class Player implements Comparable<Player> {
 
 
     public final boolean hasConsecutiveHigher(Card card){
-        for (Card playerCard : cards){
-            if (card.getValue() + 1 == playerCard.getValue()){
-                // Player has the card above this card; it will benefit them to pick it up.
-                return true;
-            }
-        }
-        return false;
+        return hasConsecutiveHigher(card.getValue());
     }
 
     public final boolean hasConsecutiveHigher(int cardValue){
@@ -122,13 +116,7 @@ public abstract class Player implements Comparable<Player> {
     }
 
     public final boolean hasConsecutiveLower(Card card){
-        for (Card playerCard : cards){
-            if (card.getValue() - 1 == playerCard.getValue()){
-                // We have the card below this card; it wont cost us a point to pick it up.
-                return true;
-            }
-        }
-        return false;
+        return hasConsecutiveLower(card.getValue());
     }
 
     public final boolean hasConsecutiveLower(int cardValue){
