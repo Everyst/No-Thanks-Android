@@ -45,7 +45,7 @@ public class GameScreen extends Screen {
     Paint paintLeft;
     Paint paintRight;
 
-    public GameScreen(Game game) {
+    public GameScreen(Game game, int numberOfHumanPlayers) {
         super(game);
 
         // Initialize game objects here
@@ -70,10 +70,10 @@ public class GameScreen extends Screen {
         paintRight.setColor(Color.WHITE);
 
 
-        // Set up the deck
+        // Set up the game
         deck = new Deck();
 
-        players = setUpPlayers();
+        players = setUpPlayers(numberOfHumanPlayers);
         numberOfPlayers = players.size();
 
         otherPlayers = new ArrayList<Player>(numberOfPlayers-1); // Will store all players who aren't the current player.
@@ -124,11 +124,11 @@ public class GameScreen extends Screen {
                     TouchEvent event = touchEvents.get(i);
                     if (event.type == TouchEvent.TOUCH_UP) {
 
-                        if (inBounds(event, 180, 600, 300, 100)) {
+                        if (ScreenHelper.inBounds(event, 180, 600, 300, 100)) {
                             // Yes please
                             decisionMade = true;
                             humanPlayer.setTaking(true);
-                        } else if (inBounds(event, 820, 600, 300, 100)) {
+                        } else if (ScreenHelper.inBounds(event, 820, 600, 300, 100)) {
                             // No thanks
                             decisionMade = true;
                             humanPlayer.setTaking(false);
@@ -192,7 +192,7 @@ public class GameScreen extends Screen {
 
 
 
-    private static List<Player> setUpPlayers(){
+    private static List<Player> setUpPlayers(int numberOfHumanPlayers){
         List<Player> players = new ArrayList<Player>();
 
         //players.add(new HumanPlayer("Player1"));
@@ -207,11 +207,18 @@ public class GameScreen extends Screen {
         //players.add(new RandomAI("Player4"));
 
 
-        players.add(new HumanPlayer());
+        if (numberOfHumanPlayers == 1) {
+            players.add(new HumanPlayer());
 
-        players.add(new GeoffFAI());
-        players.add(new NetValueLessThanXAI(11));
-        players.add(new NeverTakeAI());
+            players.add(new GeoffFAI());
+            players.add(new NetValueLessThanXAI(11));
+            players.add(new NeverTakeAI());
+        } else if (numberOfHumanPlayers == 2) {
+            players.add(new HumanPlayer("Player 1"));
+            players.add(new HumanPlayer("Player 2"));
+
+            players.add(new GeoffFAI());
+        }
 
 
         Collections.shuffle(players); // shuffle the order of players
@@ -225,16 +232,6 @@ public class GameScreen extends Screen {
             currentPlayer = 0;
         }
         return currentPlayer;
-    }
-
-
-    private boolean inBounds(TouchEvent event, int x, int y, int width,
-                             int height) {
-        if (event.x > x && event.x < x + width - 1 && event.y > y
-                && event.y < y + height - 1)
-            return true;
-        else
-            return false;
     }
 
 
