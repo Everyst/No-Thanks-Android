@@ -24,7 +24,7 @@ import co.therealm.nothanks.players.Player;
  */
 public class GameScreen extends Screen {
     enum GameState {
-        Running, Paused, GameOver
+        Running, ExitConfirmation, GameOver
     }
 
     GameState state = GameState.Running;
@@ -95,8 +95,8 @@ public class GameScreen extends Screen {
 
         if (state == GameState.Running) {
             updateRunning(touchEvents, deltaTime);
-        } else if (state == GameState.Paused) {
-            updatePaused(touchEvents);
+        } else if (state == GameState.ExitConfirmation) {
+            updateExitConfirmation(touchEvents);
         } else if (state == GameState.GameOver) {
             updateGameOver(touchEvents);
         }
@@ -168,12 +168,20 @@ public class GameScreen extends Screen {
 
     }
 
-    private void updatePaused(List<TouchEvent> touchEvents) {
+    private void updateExitConfirmation(List<TouchEvent> touchEvents) {
         int len = touchEvents.size();
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
-                state = GameState.Running;
+                if (ScreenHelper.inBounds(event, 180, 600, 300, 100)){
+                    // Exit
+                    nullify();
+                    game.setScreen(new MainMenuScreen(game));
+                    return;
+                } else if (ScreenHelper.inBounds(event, 820, 600, 300, 100)){
+                    // Cancel
+                    state = GameState.Running;
+                }
             }
         }
     }
@@ -248,8 +256,8 @@ public class GameScreen extends Screen {
         // Secondly, draw the UI above the game elements.
         if (state == GameState.Running) {
             drawRunningUI();
-        } else if (state == GameState.Paused) {
-            drawPausedUI();
+        } else if (state == GameState.ExitConfirmation) {
+            drawExitConfirmationUI();
         } else if (state == GameState.GameOver) {
             drawGameOverUI();
         }
@@ -309,11 +317,17 @@ public class GameScreen extends Screen {
 
     }
 
-    private void drawPausedUI() {
+    private void drawExitConfirmationUI() {
         Graphics g = game.getGraphics();
         g.drawARGB(155, 0, 0, 0);
 
-        g.drawString("Paused", 640, 300, paintMiddle);
+        g.drawString("Are you sure you would like to exit the game?", 640, 300, paintMiddle);
+        
+        g.drawRect(180, 600, 300, 100, Color.DKGRAY);
+        g.drawString("Exit", 320, 650, paintMiddle);
+
+        g.drawRect(820, 600, 300, 100, Color.DKGRAY);
+        g.drawString("Cancel", 960, 650, paintMiddle);
 
     }
 
@@ -336,9 +350,9 @@ public class GameScreen extends Screen {
 
 
     @Override
-    public void pause() {
+    public void exitConfirmation() {
         if (state == GameState.Running) {
-            state = GameState.Paused;
+            state = GameState.ExitConfirmation;
         }
     }
 
