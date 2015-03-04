@@ -18,8 +18,6 @@ public class LoadingScreen extends Screen {
     public void update(float deltaTime) {
         Graphics g = game.getGraphics();
         Assets.menu = g.newImage("haru.png", ImageFormat.RGB565);
-        Assets.click = game.getAudio().createMusic("snowflakes.mp3");
-
 
         game.setScreen(new MainMenuScreen(game));
     }

@@ -1,5 +1,7 @@
 package co.therealm.nothanks;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.graphics.Color;
@@ -9,21 +11,35 @@ import co.therealm.framework.Game;
 import co.therealm.framework.Graphics;
 import co.therealm.framework.Input.TouchEvent;
 import co.therealm.framework.Screen;
+import co.therealm.nothanks.model.Card;
+import co.therealm.nothanks.model.Deck;
+import co.therealm.nothanks.players.HumanPlayer;
+import co.therealm.nothanks.players.Player;
+import co.therealm.nothanks.players.RandomAI;
 
 /**
  * Created by Geoffrey on 3/03/2015.
  */
 public class GameScreen extends Screen {
     enum GameState {
-        Ready, Running, Paused, GameOver
+        Running, Paused, GameOver
     }
 
-    GameState state = GameState.Ready;
+    GameState state = GameState.Running;
 
     // Variable Setup
     // You would create game objects here.
 
-    int livesLeft = 1;
+    private int currentPlayer;
+    private int numberOfPlayers;
+    private List<Player> players;
+    private List<Player> otherPlayers;
+    private HumanPlayer humanPlayer;
+    private boolean decisionMade;
+    private Deck deck;
+    private Card currentCard;
+
+
     Paint paint;
 
     public GameScreen(Game game) {
@@ -37,6 +53,20 @@ public class GameScreen extends Screen {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setAntiAlias(true);
         paint.setColor(Color.WHITE);
+
+
+        // Set up the deck
+        deck = new Deck();
+
+        players = setUpPlayers();
+        numberOfPlayers = players.size();
+
+        otherPlayers = new ArrayList<Player>(numberOfPlayers-1); // Will store all players who aren't the current player.
+
+        // Get the first card out
+        currentCard = deck.nextCard();
+
+        currentPlayer = 0;
     }
 
     @Override
@@ -48,9 +78,7 @@ public class GameScreen extends Screen {
         // Refer to Unit 3's code. We did a similar thing without separating the
         // update methods.
 
-        if (state == GameState.Ready) {
-            updateReady(touchEvents);
-        } else if (state == GameState.Running) {
+        if (state == GameState.Running) {
             updateRunning(touchEvents, deltaTime);
         } else if (state == GameState.Paused) {
             updatePaused(touchEvents);
@@ -60,64 +88,69 @@ public class GameScreen extends Screen {
     }
 
 
-    private void updateReady(List<TouchEvent> touchEvents) {
-
-        // This example starts with a "Ready" screen.
-        // When the user touches the screen, the game begins.
-        // state now becomes GameState.Running.
-        // Now the updateRunning() method will be called!
-
-        if (touchEvents.size() > 0) {
-            state = GameState.Running;
-        }
-    }
-
     private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
 
-        //This is identical to the update() method from our Unit 2/3 game.
+        otherPlayers.clear();
+        otherPlayers.addAll(players);
+        otherPlayers.remove(currentPlayer);
 
 
-        // 1. All touch input is handled here:
-        int len = touchEvents.size();
-        for (int i = 0; i < len; i++) {
-            TouchEvent event = touchEvents.get(i);
+        if (players.get(currentPlayer).isHuman()){
 
-            if (event.type == TouchEvent.TOUCH_DOWN) {
+            decisionMade = false;
 
-                if (event.x < 640) {
-                    // Move left.
+            // Check for touch events
+            int len = touchEvents.size();
+            if (len != 0) {
+
+                humanPlayer = (HumanPlayer) players.get(currentPlayer);
+
+                for (int i = 0; i < len; i++) {
+                    TouchEvent event = touchEvents.get(i);
+                    if (event.type == TouchEvent.TOUCH_UP) {
+
+                        decisionMade = true;
+
+                        if (event.x < 640) {
+                            // Yes please
+                            humanPlayer.setTaking(true);
+                        } else if (event.x >= 640) {
+                            // No thanks
+                            humanPlayer.setTaking(false);
+                        }
+                    }
                 }
 
-                else if (event.x > 640) {
-                    // Move right.
+                if (decisionMade) {
+                    if (humanPlayer.takeTurn(currentCard, otherPlayers, deck.cardsRemaining())) {
+                        if ((currentCard = deck.nextCard()) == null) {
+                            // No more cards, end the game
+                            state = GameState.GameOver;
+                        }
+                    } else {
+                        currentPlayer = nextPlayer();
+                    }
                 }
-
             }
 
-            if (event.type == TouchEvent.TOUCH_UP) {
-
-                if (event.x < 640) {
-                    // Stop moving left.
-                }
-
-                else if (event.x > 640) {
-                    // Stop moving right. }
+        } else {
+            // While the current player is willing to take the cards, he keeps taking them.
+            while (players.get(currentPlayer).takeTurn(currentCard, otherPlayers, deck.cardsRemaining())) {
+                if ((currentCard = deck.nextCard()) == null) {
+                    // No more cards, end the game
+                    state = GameState.GameOver;
+                    break;
                 }
             }
 
-
-        }
-
-        // 2. Check miscellaneous events like death:
-
-        if (livesLeft == 0) {
-            state = GameState.GameOver;
+            if (currentCard != null){
+                // The player put a token on the card
+                currentPlayer = nextPlayer();
+            }
         }
 
 
-        // 3. Call individual update() methods here.
-        // This is where all the game updates happen.
-        // For example, robot.update();
+
     }
 
     private void updatePaused(List<TouchEvent> touchEvents) {
@@ -146,6 +179,40 @@ public class GameScreen extends Screen {
     }
 
 
+
+    private static List<Player> setUpPlayers(){
+        List<Player> players = new ArrayList<Player>();
+
+        players.add(new HumanPlayer("Player1"));
+        players.add(new HumanPlayer("Player2"));
+        players.add(new HumanPlayer("Player3"));
+        players.add(new HumanPlayer("Player4"));
+
+
+        //players.add(new RandomAI("Player1"));
+        //players.add(new RandomAI("Player2"));
+        //players.add(new RandomAI("Player3"));
+        //players.add(new RandomAI("Player4"));
+
+        //players.add(new GeoffFAI());
+        //players.add(new NetValueLessThanXAI(11));
+        //players.add(new NeverTakeAI());
+
+
+        Collections.shuffle(players); // shuffle the order of players
+
+        return players;
+    }
+
+    private int nextPlayer(){
+        currentPlayer++;
+        if (currentPlayer % numberOfPlayers == 0){
+            currentPlayer = 0;
+        }
+        return currentPlayer;
+    }
+
+
     @Override
     public void paint(float deltaTime) {
         Graphics g = game.getGraphics();
@@ -157,9 +224,7 @@ public class GameScreen extends Screen {
         // g.drawImage(Assets.character, characterX, characterY);
 
         // Secondly, draw the UI above the game elements.
-        if (state == GameState.Ready) {
-            drawReadyUI();
-        } else if (state == GameState.Running) {
+        if (state == GameState.Running) {
             drawRunningUI();
         } else if (state == GameState.Paused) {
             drawPausedUI();
@@ -175,33 +240,54 @@ public class GameScreen extends Screen {
         // constructor.
         paint = null;
 
+        currentPlayer = 0;
+        numberOfPlayers = 0;
+        players = null;
+        otherPlayers = null;
+        deck = null;
+        currentCard = null;
+
         // Call garbage collector to clean up memory.
         System.gc();
     }
 
-    private void drawReadyUI() {
-        Graphics g = game.getGraphics();
-
-        g.drawARGB(155, 0, 0, 0);
-        g.drawString("Tap each side of the screen to move in that direction.", 640, 300, paint);
-    }
-
     private void drawRunningUI() {
         Graphics g = game.getGraphics();
+        g.drawARGB(155, 0, 0, 0);
+
+        g.drawString(players.get(currentPlayer).getName() + " takes their turn", 640, 100, paint);
+
+        g.drawString("The current card is", 640, 200, paint);
+        g.drawString(""+currentCard.getValue(), 640, 250, paint);
+        g.drawString("with "+currentCard.getTokens()+" tokens", 640, 300, paint);
+
+        g.drawString(players.get(currentPlayer).getName() + " has " + players.get(currentPlayer).getTokens() + " tokens", 640, 450, paint);
+
+        g.drawString("Yes please", 320, 600, paint);
+        g.drawString("No thanks", 960, 600, paint);
 
     }
 
     private void drawPausedUI() {
         Graphics g = game.getGraphics();
-        // Darken the entire screen so you can display the Paused screen.
         g.drawARGB(155, 0, 0, 0);
+
+        g.drawString("Paused", 640, 300, paint);
 
     }
 
     private void drawGameOverUI() {
         Graphics g = game.getGraphics();
-        g.drawRect(0, 0, 1281, 801, Color.BLACK);
-        g.drawString("GAME OVER.", 640, 300, paint);
+        g.drawARGB(155, 0, 0, 0);
+        g.drawString("GAME OVER", 640, 100, paint);
+
+        Collections.sort(players);
+
+        g.drawString(players.get(0) + " won!", 640, 200, paint);
+
+        for (int i = 0; i < numberOfPlayers; i++){
+            g.drawString("Player " + players.get(i) + " got " + players.get(i).getStatus(), 640, 250 + 50*i, paint);
+        }
 
     }
 

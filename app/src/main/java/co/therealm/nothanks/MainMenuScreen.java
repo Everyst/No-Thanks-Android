@@ -51,6 +51,9 @@ public class MainMenuScreen extends Screen{
     @Override
     public void paint(float deltaTime) {
         Graphics g = game.getGraphics();
+
+        g.drawARGB(155, 0, 0, 0);
+
         g.drawImage(Assets.menu, 0, 0);
     }
 
@@ -68,7 +71,8 @@ public class MainMenuScreen extends Screen{
 
     @Override
     public void backButton() {
-        //Display "Exit Game?" Box
+        // Exit the game
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
 }
