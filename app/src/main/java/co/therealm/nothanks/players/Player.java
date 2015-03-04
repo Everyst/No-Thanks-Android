@@ -73,8 +73,8 @@ public abstract class Player implements Comparable<Player> {
                 // and therefore will be counted.
                 if (card.getValue() != previousCard+1){
                     points += card.getValue();
-                    previousCard = card.getValue();
                 }
+                previousCard = card.getValue();
             }
         }
 
