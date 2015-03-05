@@ -13,10 +13,7 @@ import co.therealm.framework.Input.TouchEvent;
 import co.therealm.framework.Screen;
 import co.therealm.nothanks.model.Card;
 import co.therealm.nothanks.model.Deck;
-import co.therealm.nothanks.players.GeoffFAI;
 import co.therealm.nothanks.players.HumanPlayer;
-import co.therealm.nothanks.players.NetValueLessThanXAI;
-import co.therealm.nothanks.players.NeverTakeAI;
 import co.therealm.nothanks.players.Player;
 
 /**
@@ -45,7 +42,7 @@ public class GameScreen extends Screen {
     Paint paintLeft;
     Paint paintRight;
 
-    public GameScreen(Game game, int numberOfHumanPlayers) {
+    public GameScreen(Game game, List<Player> playerList) {
         super(game);
 
         // Initialize game objects here
@@ -73,7 +70,7 @@ public class GameScreen extends Screen {
         // Set up the game
         deck = new Deck();
 
-        players = setUpPlayers(numberOfHumanPlayers);
+        players = playerList;
         numberOfPlayers = players.size();
 
         otherPlayers = new ArrayList<Player>(numberOfPlayers-1); // Will store all players who aren't the current player.
@@ -94,7 +91,7 @@ public class GameScreen extends Screen {
         // update methods.
 
         if (state == GameState.Running) {
-            updateRunning(touchEvents, deltaTime);
+            updateRunning(touchEvents);
         } else if (state == GameState.ExitConfirmation) {
             updateExitConfirmation(touchEvents);
         } else if (state == GameState.GameOver) {
@@ -103,7 +100,7 @@ public class GameScreen extends Screen {
     }
 
 
-    private void updateRunning(List<TouchEvent> touchEvents, float deltaTime) {
+    private void updateRunning(List<TouchEvent> touchEvents) {
 
         otherPlayers.clear();
         otherPlayers.addAll(players);
@@ -128,7 +125,7 @@ public class GameScreen extends Screen {
                             // Yes please
                             decisionMade = true;
                             humanPlayer.setTaking(true);
-                        } else if (ScreenHelper.inBounds(event, 820, 600, 300, 100)) {
+                        } else if (players.get(currentPlayer).getTokens() > 0 && ScreenHelper.inBounds(event, 820, 600, 300, 100)) {
                             // No thanks
                             decisionMade = true;
                             humanPlayer.setTaking(false);
@@ -191,48 +188,17 @@ public class GameScreen extends Screen {
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
-                nullify();
-                game.setScreen(new MainMenuScreen(game));
-                return;
+                exit();
             }
         }
     }
 
 
-
-    private static List<Player> setUpPlayers(int numberOfHumanPlayers){
-        List<Player> players = new ArrayList<Player>();
-
-        //players.add(new HumanPlayer("Player1"));
-        //players.add(new HumanPlayer("Player2"));
-        //players.add(new HumanPlayer("Player3"));
-        //players.add(new HumanPlayer("Player4"));
-
-
-        //players.add(new RandomAI("Player1"));
-        //players.add(new RandomAI("Player2"));
-        //players.add(new RandomAI("Player3"));
-        //players.add(new RandomAI("Player4"));
-
-
-        if (numberOfHumanPlayers == 1) {
-            players.add(new HumanPlayer());
-
-            players.add(new GeoffFAI());
-            players.add(new NetValueLessThanXAI(11));
-            players.add(new NeverTakeAI());
-        } else if (numberOfHumanPlayers == 2) {
-            players.add(new HumanPlayer("Player 1"));
-            players.add(new HumanPlayer("Player 2"));
-
-            players.add(new GeoffFAI());
-        }
-
-
-        Collections.shuffle(players); // shuffle the order of players
-
-        return players;
+    private void exit(){
+        nullify();
+        game.setScreen(new MainMenuScreen(game));
     }
+
 
     private int nextPlayer(){
         currentPlayer++;
@@ -245,11 +211,10 @@ public class GameScreen extends Screen {
 
     @Override
     public void paint(float deltaTime) {
-        Graphics g = game.getGraphics();
-
         // First draw the game elements.
 
         // Example:
+        //Graphics g = game.getGraphics();
         // g.drawImage(Assets.background, 0, 0);
         // g.drawImage(Assets.character, characterX, characterY);
 
@@ -312,8 +277,10 @@ public class GameScreen extends Screen {
         g.drawRect(180, 600, 300, 100, Color.DKGRAY);
         g.drawString("Yes please", 320, 650, paintMiddle);
 
-        g.drawRect(820, 600, 300, 100, Color.DKGRAY);
-        g.drawString("No thanks", 960, 650, paintMiddle);
+        if (players.get(currentPlayer).getTokens() > 0) {
+            g.drawRect(820, 600, 300, 100, Color.DKGRAY);
+            g.drawString("No thanks", 960, 650, paintMiddle);
+        }
 
     }
 
@@ -350,10 +317,8 @@ public class GameScreen extends Screen {
 
 
     @Override
-    public void exitConfirmation() {
-        if (state == GameState.Running) {
-            state = GameState.ExitConfirmation;
-        }
+    public void pause() {
+
     }
 
     @Override
@@ -368,6 +333,10 @@ public class GameScreen extends Screen {
 
     @Override
     public void backButton() {
-        pause();
+        if (state == GameState.Running) {
+            state = GameState.ExitConfirmation;
+        } else if (state == GameState.GameOver || state == GameState.ExitConfirmation) {
+            exit();
+        }
     }
 }

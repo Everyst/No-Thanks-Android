@@ -134,12 +134,12 @@ public class AndroidMusic implements Music, OnCompletionListener, OnSeekComplete
 
     @Override
     public void onSeekComplete(MediaPlayer player) {
-        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void onVideoSizeChanged(MediaPlayer player, int width, int height) {
-        // TODO Auto-generated method stub
+
     }
 
 }
