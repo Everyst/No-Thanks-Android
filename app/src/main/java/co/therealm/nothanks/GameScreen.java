@@ -42,7 +42,7 @@ public class GameScreen extends Screen {
     Paint paintLeft;
     Paint paintRight;
 
-    public GameScreen(Game game, List<Player> playerList) {
+    public GameScreen(Game game) {
         super(game);
 
         // Initialize game objects here
@@ -70,15 +70,14 @@ public class GameScreen extends Screen {
         // Set up the game
         deck = new Deck();
 
-        players = playerList;
+        players = NoThanksGame.getPlayerList();
+        Collections.shuffle(players); // shuffle the order of players
         numberOfPlayers = players.size();
-
+        currentPlayer = 0;
         otherPlayers = new ArrayList<Player>(numberOfPlayers-1); // Will store all players who aren't the current player.
 
         // Get the first card out
         currentCard = deck.nextCard();
-
-        currentPlayer = 0;
     }
 
     @Override
