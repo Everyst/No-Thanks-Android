@@ -70,7 +70,7 @@ public class GameScreen extends Screen {
         // Set up the game
         deck = new Deck();
 
-        players = NoThanksGame.getPlayerList();
+        players = ((NoThanksGame)game).getPlayerList();
         Collections.shuffle(players); // shuffle the order of players
         numberOfPlayers = players.size();
         currentPlayer = 0;

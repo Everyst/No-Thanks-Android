@@ -72,7 +72,7 @@ public class PlayerSetupScreen extends Screen {
 
 
 
-    private static List<Player> setUpPlayers(int numberOfHumanPlayers){
+    private static List<Player> setUpPlayers(){
         List<Player> players = new ArrayList<Player>();
 
         //players.add(new HumanPlayer("Player1"));
@@ -87,27 +87,18 @@ public class PlayerSetupScreen extends Screen {
         //players.add(new RandomAI("Player4"));
 
 
-        if (numberOfHumanPlayers == 1) {
-            players.add(new HumanPlayer());
 
-            players.add(new GeoffFAI());
-            players.add(new NetValueLessThanXAI(11));
-            players.add(new NeverTakeAI());
-        } else if (numberOfHumanPlayers == 2) {
-            players.add(new HumanPlayer("Player 1"));
-            players.add(new HumanPlayer("Player 2"));
+        players.add(new HumanPlayer("Player 1"));
+        players.add(new HumanPlayer("Player 2"));
 
-            players.add(new GeoffFAI());
-        }
-
-
-
+        players.add(new GeoffFAI());
 
         return players;
     }
 
 
     private void save(){
+        ((NoThanksGame)game).setPlayerList(setUpPlayers());
         game.setScreen(new MainMenuScreen(game));
     }
 
