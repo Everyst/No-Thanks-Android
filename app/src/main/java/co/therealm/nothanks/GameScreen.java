@@ -238,6 +238,10 @@ public class GameScreen extends Screen {
 
         currentPlayer = 0;
         numberOfPlayers = 0;
+
+        for (Player player : players){
+            player.reset();
+        }
         players = null;
         otherPlayers = null;
         deck = null;

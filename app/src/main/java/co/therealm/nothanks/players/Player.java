@@ -1,6 +1,7 @@
 package co.therealm.nothanks.players;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
 
@@ -16,8 +17,25 @@ public abstract class Player implements Comparable<Player> {
 
     List<Card> cards = new ArrayList<Card>();
 
-    public Player(String name){
-        this.name = name;
+    protected Player(String[] parameters){
+        if (parameters == null){
+            this.name = "Default Name";
+        } else {
+            this.name = parameters[0];
+
+            if (parameters.length > 1) {
+                // Send the parameters through without the name at the front
+                initialiseValues(Arrays.copyOfRange(parameters, 1, parameters.length));
+            }
+        }
+    }
+
+    protected void initialiseValues(String[] parameters){
+        // AI classes may override this to take in parameters
+    }
+
+    protected void resetValues(){
+        // Child classes may override this to avoid keeping data between games
     }
 
     /**
@@ -82,6 +100,15 @@ public abstract class Player implements Comparable<Player> {
         points -= getTokens();
 
         return points;
+    }
+
+
+    public final void reset() {
+        tokens = 11;
+
+        cards = new ArrayList<Card>();
+
+        resetValues();
     }
 
 

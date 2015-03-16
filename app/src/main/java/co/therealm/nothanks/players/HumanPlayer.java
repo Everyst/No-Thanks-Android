@@ -16,10 +16,14 @@ public class HumanPlayer extends Player{
     private boolean taking = true;
 
     public HumanPlayer() {
-        super(AI_NAME);
+        super(new String[]{AI_NAME});
     }
 
     public HumanPlayer(String name) {
+        this(new String[]{name});
+    }
+
+    public HumanPlayer(String[] name) {
         super(name);
     }
 

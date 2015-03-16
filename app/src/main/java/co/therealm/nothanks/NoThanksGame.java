@@ -36,7 +36,7 @@ public class NoThanksGame extends AndroidGame {
 
         fileIO = new AndroidFileIO(this);
 
-        playerList = new ArrayList<Player>();
+        playerList = null;
 
     }
 
@@ -59,44 +59,45 @@ public class NoThanksGame extends AndroidGame {
             InputStream is = fileIO.readFile("players.txt");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line = null;
-            String[] input;
+            String[] playerInput;
+            String[] playerParameters = null;
 
-            Player newPlayer = new RandomAI();
+            Player newPlayer = null;
 
             while ((line = reader.readLine()) != null) {
 
                 if (!line.startsWith("#")) {
-                    input = line.split(",");
+                    playerInput = line.split(":");
+                    if (playerInput.length == 0){
+                        // Can not load this line
+                        continue;
+                    } else {
 
-                    Class playerClass = Class.forName("co.therealm.nothanks.players." + input[0]);
+                        Class playerClass = Class.forName("co.therealm.nothanks.players." + playerInput[0]);
 
-                    Constructor<Player>[] constructors = playerClass.getConstructors();
 
-                    for (Constructor<Player> constructor : constructors){
-                        if (constructor.getParameterTypes().length == input.length - 1){
-                            for (int i = 1; i < input.length; i++){
-                                //TODO Figure this out
+                        if (playerInput.length == 1) {
+
+                            newPlayer = (Player)playerClass.newInstance();
+
+                        } else if (playerInput.length > 1) {
+                            playerParameters = playerInput[1].split(",");
+
+                            Constructor<Player>[] constructors = playerClass.getConstructors();
+
+                            for (Constructor<Player> constructor : constructors){
+                                if (constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0] == playerParameters.getClass()){
+                                    newPlayer = constructor.newInstance(playerParameters);
+                                }
                             }
-                            newPlayer = constructor.newInstance(input[1]);
                         }
                     }
-                    /*switch (input[0]) {
-                        case "HumanPlayer":
-                            if (input.length > 1){
-                                newPlayer = new HumanPlayer(input[1]);
-                            } else {
-                                newPlayer = new HumanPlayer("Player " + players.size() + 1);
-                            }
-                            break;
-                        case "GeoffFAI":
-                            if
-                            newPlayer = new GeoffFAI();
-                            break;
-                        default:
-                            break;
-                    }*/
 
-                    players.add(newPlayer);
+                    if(newPlayer == null){
+                        continue;
+                    } else {
+                        players.add(newPlayer);
+                    }
                 }
 
 
@@ -104,6 +105,10 @@ public class NoThanksGame extends AndroidGame {
 
 
             is.close();
+
+            if (players.size() < 2){
+                throw new RuntimeException("Can't have a game with fewer than two players.");
+            }
 
         } catch (Exception e) {
             // Exception caught, hard coded default options
@@ -120,7 +125,9 @@ public class NoThanksGame extends AndroidGame {
 
 
     private static void savePlayers(){
-        // Write out to a file somehow
+        // TODO Write out to a file somehow
+
+
     }
 
     @Override

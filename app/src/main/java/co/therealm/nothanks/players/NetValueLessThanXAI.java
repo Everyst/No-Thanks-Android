@@ -13,15 +13,21 @@ public class NetValueLessThanXAI extends Player{
     private int threshold;
 
     public NetValueLessThanXAI(int threshold) {
-        super(AI_NAME + "_X=" + threshold);
-
-        this.threshold = threshold;
+        super(new String[]{AI_NAME + "_X=" + threshold, ""+threshold});
     }
 
-    public NetValueLessThanXAI(String name, int threshold) {
-        super(name);
+    public NetValueLessThanXAI(String[] parameters) {
+        super(parameters);
+    }
 
-        this.threshold = threshold;
+    @Override
+    protected void initialiseValues(String[] parameters) {
+        // Take the threshold value from the parameters
+        if (parameters.length > 0){
+            this.threshold = Integer.valueOf(parameters[0]);
+        } else {
+            this.threshold = 10; // Default value
+        }
     }
 
     @Override

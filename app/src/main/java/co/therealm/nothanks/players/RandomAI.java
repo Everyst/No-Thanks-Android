@@ -12,10 +12,10 @@ public class RandomAI extends Player{
     private static final String AI_NAME = "RandomAI";
 
     public RandomAI() {
-        super(AI_NAME);
+        super(new String[]{AI_NAME});
     }
 
-    public RandomAI(String name) {
+    public RandomAI(String[] name) {
         super(name);
     }
 

@@ -11,10 +11,10 @@ public class NeverTakeAI extends Player{
     private static final String AI_NAME = "NeverTakeAI";
 
     public NeverTakeAI() {
-        super(AI_NAME);
+        super(new String[]{AI_NAME});
     }
 
-    public NeverTakeAI(String name) {
+    public NeverTakeAI(String[] name) {
         super(name);
     }
 

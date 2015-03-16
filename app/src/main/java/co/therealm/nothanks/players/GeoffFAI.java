@@ -11,10 +11,10 @@ public class GeoffFAI extends Player{
     private static final String AI_NAME = "GeoffFAI";
 
     public GeoffFAI() {
-        super(AI_NAME);
+        super(new String[]{AI_NAME});
     }
 
-    public GeoffFAI(String name) {
+    public GeoffFAI(String name[]) {
         super(name);
     }
 
