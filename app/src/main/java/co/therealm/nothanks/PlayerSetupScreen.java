@@ -23,16 +23,19 @@ import co.therealm.nothanks.players.RandomAI;
  */
 public class PlayerSetupScreen extends Screen {
 
-    private static final int[] BUTTON_SINGLE_PLAYER = new int[]{180, 400, 300, 100};
-    private static final int[] BUTTON_TWO_PLAYER = new int[]{820, 400, 300, 100};
+    private static final int[] BUTTON_ADD_HUMAN = new int[]{180, 400, 300, 100};
+    private static final int[] BUTTON_ADD_BOT = new int[]{500, 400, 300, 100};
+    private static final int[] BUTTON_REMOVE_LAST_PLAYER = new int[]{820, 400, 300, 100};
 
     private static final int[] BUTTON_SAVE = new int[]{820, 600, 300, 100};
+    private static final int[] BUTTON_CLEAR = new int[]{180, 600, 300, 100};
+
 
     Paint paint;
     Paint paintLeft;
     Paint paintRight;
 
-    List<Player> players = null;
+    List<Player> players = new ArrayList<Player>();
 
     public PlayerSetupScreen(Game game) {
         super(game);
@@ -55,7 +58,9 @@ public class PlayerSetupScreen extends Screen {
         paintRight.setAntiAlias(true);
         paintRight.setColor(Color.WHITE);
 
-        players = ((NoThanksGame)game).getPlayerList();
+        for (Player player : ((NoThanksGame) game).getPlayerList()){
+            players.add(player);
+        }
     }
 
 
@@ -68,15 +73,21 @@ public class PlayerSetupScreen extends Screen {
             Input.TouchEvent event = touchEvents.get(i);
             if (event.type == Input.TouchEvent.TOUCH_UP) {
 
-                if (ScreenHelper.inBounds(event, BUTTON_SAVE[0], BUTTON_SAVE[1], BUTTON_SAVE[2], BUTTON_SAVE[3])) {
+                if (ScreenHelper.inButtonBounds(event, BUTTON_SAVE)) {
                     // Save
                     save();
-                } else if (ScreenHelper.inBounds(event, BUTTON_SINGLE_PLAYER[0], BUTTON_SINGLE_PLAYER[1], BUTTON_SINGLE_PLAYER[2], BUTTON_SINGLE_PLAYER[3])) {
-                    // Single player
-                    singlePlayer();
-                } else if (ScreenHelper.inBounds(event, BUTTON_TWO_PLAYER[0], BUTTON_TWO_PLAYER[1], BUTTON_TWO_PLAYER[2], BUTTON_TWO_PLAYER[3])) {
-                    // Two player
-                    twoPlayer();
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_CLEAR)) {
+                    // Clear
+                    clearPlayers();
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_ADD_HUMAN)) {
+                    // Add human player
+                    addHuman();
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_ADD_BOT)) {
+                    // Add human player
+                    addBot();
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_REMOVE_LAST_PLAYER)) {
+                    // Remove the last added player
+                    removeLastPlayer();
                 }
 
             }
@@ -93,28 +104,39 @@ public class PlayerSetupScreen extends Screen {
 
         g.drawString("Set up the players for the game", 640, 100, paint);
 
-        for (int i = 0; i < players.size(); i++){
+        for (int i = 0; i < players.size(); i++) {
             if (i % 2 == 0) {
-                g.drawString(players.get(i).getName(), 100, 150+i*20, paintLeft);
+                g.drawString(players.get(i).getName(), 100, 150 + i * 20, paintLeft);
             } else {
-                g.drawString(players.get(i).getName(), 1180, 150+(i-1)*20, paintRight);
+                g.drawString(players.get(i).getName(), 1180, 150 + (i - 1) * 20, paintRight);
             }
         }
 
+        if (players.size() < 2) {
+            g.drawString("You need at least two players to play a game", 640, 300, paint);
+        }
 
-        g.drawRect(BUTTON_SAVE[0], BUTTON_SAVE[1], BUTTON_SAVE[2], BUTTON_SAVE[3], Color.DKGRAY);
-        g.drawString("Save", 960, 650, paint);
 
-        g.drawRect(BUTTON_SINGLE_PLAYER[0], BUTTON_SINGLE_PLAYER[1], BUTTON_SINGLE_PLAYER[2], BUTTON_SINGLE_PLAYER[3], Color.DKGRAY);
-        g.drawString("Single player", 320, 450, paint);
+        if (players.size() < 6) {
+            ScreenHelper.drawButton(g, paint, BUTTON_ADD_HUMAN, "Add Human");
+            ScreenHelper.drawButton(g, paint, BUTTON_ADD_BOT, "Add Bot");
+        }
 
-        g.drawRect(BUTTON_TWO_PLAYER[0], BUTTON_TWO_PLAYER[1], BUTTON_TWO_PLAYER[2], BUTTON_TWO_PLAYER[3], Color.DKGRAY);
-        g.drawString("Two player", 960, 450, paint);
+        if (players.size() > 0){
+            ScreenHelper.drawButton(g, paint, BUTTON_REMOVE_LAST_PLAYER, "Remove Last Player");
+        }
+
+        ScreenHelper.drawButton(g, paint, BUTTON_CLEAR, "Clear");
+
+        if (players.size() > 1) {
+            ScreenHelper.drawButton(g, paint, BUTTON_SAVE, "Save");
+        }
+
     }
 
 
 
-   /* private static List<Player> setUpPlayers(){
+    /* private static List<Player> setUpPlayers(){
         List<Player> players = new ArrayList<Player>();
 
         //players.add(new HumanPlayer("Player1"));
@@ -136,7 +158,7 @@ public class PlayerSetupScreen extends Screen {
         players.add(new GeoffFAI());
 
         return players;
-    }*/
+    }
 
     private void singlePlayer(){
         players = new ArrayList<Player>();
@@ -155,11 +177,35 @@ public class PlayerSetupScreen extends Screen {
         players.add(new HumanPlayer("Player 2"));
 
         players.add(new GeoffFAI());
-    }
+    }*/
 
     private void save(){
-        ((NoThanksGame)game).setPlayerList(players);
-        game.setScreen(new MainMenuScreen(game));
+        if (players.size() > 1) {
+            ((NoThanksGame) game).setPlayerList(players);
+            game.setScreen(new MainMenuScreen(game));
+        }
+    }
+
+    private void clearPlayers(){
+        players = new ArrayList<Player>();
+    }
+
+    private void addHuman(){
+        if (players.size() < 6) {
+            players.add(new HumanPlayer("Player " + (players.size() + 1)));
+        }
+    }
+
+    private void addBot(){
+        if (players.size() < 6) {
+            players.add(new GeoffFAI(new String[]{"Bot " + (players.size() + 1)}));
+        }
+    }
+
+    private void removeLastPlayer(){
+        if (players.size() > 0) {
+            players.remove(players.size()-1);
+        }
     }
 
 

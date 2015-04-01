@@ -15,8 +15,8 @@ import co.therealm.framework.Screen;
  */
 public class MainMenuScreen extends Screen{
 
-    private static final int[] BUTTON_PLAY = new int[]{820, 600, 300, 100};
     private static final int[] BUTTON_PLAYER_SETUP = new int[]{180, 600, 300, 100};
+    private static final int[] BUTTON_PLAY = new int[]{820, 600, 300, 100};
 
 
     Paint paint;
@@ -41,10 +41,10 @@ public class MainMenuScreen extends Screen{
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
 
-                if (ScreenHelper.inBounds(event, BUTTON_PLAY[0], BUTTON_PLAY[1], BUTTON_PLAY[2], BUTTON_PLAY[3])) {
+                if (ScreenHelper.inButtonBounds(event, BUTTON_PLAY)) {
                     // Play
                     game.setScreen(new GameScreen(game));
-                } else if (ScreenHelper.inBounds(event, BUTTON_PLAYER_SETUP[0], BUTTON_PLAYER_SETUP[1], BUTTON_PLAYER_SETUP[2], BUTTON_PLAYER_SETUP[3])) {
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_PLAYER_SETUP)) {
                     // Player setup
                     game.setScreen(new PlayerSetupScreen(game));
                 }
@@ -63,11 +63,8 @@ public class MainMenuScreen extends Screen{
 
         g.drawString("No Thanks!", 640, 300, paint);
 
-        g.drawRect(BUTTON_PLAYER_SETUP[0], BUTTON_PLAYER_SETUP[1], BUTTON_PLAYER_SETUP[2], BUTTON_PLAYER_SETUP[3], Color.DKGRAY);
-        g.drawString("Setup players", 320, 650, paint);
-
-        g.drawRect(BUTTON_PLAY[0], BUTTON_PLAY[1], BUTTON_PLAY[2], BUTTON_PLAY[3], Color.DKGRAY);
-        g.drawString("Play", 960, 650, paint);
+        ScreenHelper.drawButton(g, paint, BUTTON_PLAYER_SETUP, "Setup Players");
+        ScreenHelper.drawButton(g, paint, BUTTON_PLAY, "Play");
     }
 
 

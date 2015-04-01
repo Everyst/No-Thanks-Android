@@ -20,6 +20,10 @@ import co.therealm.nothanks.players.Player;
  * Created by Geoffrey on 3/03/2015.
  */
 public class GameScreen extends Screen {
+
+    private static final int[] BUTTON_LEFT = new int[]{180, 600, 300, 100};
+    private static final int[] BUTTON_RIGHT = new int[]{820, 600, 300, 100};
+
     enum GameState {
         Running, ExitConfirmation, GameOver
     }
@@ -120,11 +124,11 @@ public class GameScreen extends Screen {
                     TouchEvent event = touchEvents.get(i);
                     if (event.type == TouchEvent.TOUCH_UP) {
 
-                        if (ScreenHelper.inBounds(event, 180, 600, 300, 100)) {
+                        if (ScreenHelper.inButtonBounds(event, BUTTON_LEFT)) {
                             // Yes please
                             decisionMade = true;
                             humanPlayer.setTaking(true);
-                        } else if (players.get(currentPlayer).getTokens() > 0 && ScreenHelper.inBounds(event, 820, 600, 300, 100)) {
+                        } else if (players.get(currentPlayer).getTokens() > 0 && ScreenHelper.inButtonBounds(event, BUTTON_RIGHT)) {
                             // No thanks
                             decisionMade = true;
                             humanPlayer.setTaking(false);
@@ -169,12 +173,12 @@ public class GameScreen extends Screen {
         for (int i = 0; i < len; i++) {
             TouchEvent event = touchEvents.get(i);
             if (event.type == TouchEvent.TOUCH_UP) {
-                if (ScreenHelper.inBounds(event, 180, 600, 300, 100)){
+                if (ScreenHelper.inButtonBounds(event, BUTTON_LEFT)){
                     // Exit
                     nullify();
                     game.setScreen(new MainMenuScreen(game));
                     return;
-                } else if (ScreenHelper.inBounds(event, 820, 600, 300, 100)){
+                } else if (ScreenHelper.inButtonBounds(event, BUTTON_RIGHT)){
                     // Cancel
                     state = GameState.Running;
                 }
@@ -277,12 +281,10 @@ public class GameScreen extends Screen {
         g.drawString("You have " + players.get(currentPlayer).getTokens() + " token/s", 640, 550, paintMiddle);
 
 
-        g.drawRect(180, 600, 300, 100, Color.DKGRAY);
-        g.drawString("Yes please", 320, 650, paintMiddle);
+        ScreenHelper.drawButton(g, paintMiddle, BUTTON_LEFT, "Yes Please");
 
         if (players.get(currentPlayer).getTokens() > 0) {
-            g.drawRect(820, 600, 300, 100, Color.DKGRAY);
-            g.drawString("No thanks", 960, 650, paintMiddle);
+            ScreenHelper.drawButton(g, paintMiddle, BUTTON_RIGHT, "No Thanks");
         }
 
     }
@@ -292,12 +294,9 @@ public class GameScreen extends Screen {
         g.drawARGB(155, 0, 0, 0);
 
         g.drawString("Are you sure you would like to exit the game?", 640, 300, paintMiddle);
-        
-        g.drawRect(180, 600, 300, 100, Color.DKGRAY);
-        g.drawString("Exit", 320, 650, paintMiddle);
 
-        g.drawRect(820, 600, 300, 100, Color.DKGRAY);
-        g.drawString("Cancel", 960, 650, paintMiddle);
+        ScreenHelper.drawButton(g, paintMiddle, BUTTON_LEFT, "Exit");
+        ScreenHelper.drawButton(g, paintMiddle, BUTTON_RIGHT, "Cancel");
 
     }
 
